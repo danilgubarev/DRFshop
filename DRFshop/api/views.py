@@ -10,7 +10,7 @@ from api.serializers import ProductSerializer, OrderSerializer, ProductInfoSeria
 from api.models import Product, Order
 
 class ProductListAPIView(generics.ListAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.exclude(stock__gt=0)
     serializer_class = ProductSerializer
 
 # @api_view(['GET'])
@@ -20,8 +20,9 @@ class ProductListAPIView(generics.ListAPIView):
 #     return Response(serializer.data)
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = Product.objects.all()
+    queryset = Product.objects.prefetch_related('items__product')
     serializer_class = ProductSerializer
+    lookup_url_kwarg = 'product_id'
 
 # @api_view(['GET'])
 # def product_detail(request, pk):
@@ -29,11 +30,17 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
 #     serializer = ProductSerializer(product)
 #     return Response(serializer.data)
 
-@api_view(['GET'])
-def order_list(request):
-    orders = Order.objects.prefetch_related('items__product')
-    serializer = OrderSerializer(orders, many=True)
-    return Response(serializer.data)
+
+class OrderListAPIView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_url_kwarg = 'product_id'
+
+# @api_view(['GET'])
+# def order_list(request):
+#     orders = Order.objects.prefetch_related('items__product')
+#     serializer = OrderSerializer(orders, many=True)
+#     return Response(serializer.data)
 
 @api_view(['GET'])
 def product_info(request):
